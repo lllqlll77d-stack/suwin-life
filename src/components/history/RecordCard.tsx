@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import type { Record } from '@/types';
+import type { Record, Category } from '@/types';
+import { CATEGORIES } from '@/types';
 import { formatTime } from '@/lib/utils';
 import CategoryTag from '@/components/chat/CategoryTag';
 
@@ -11,12 +12,23 @@ interface RecordCardProps {
   onClick?: () => void;
   onDelete?: (id: number) => void;
   onEdit?: (id: number, content: string) => void;
+  onCategoriesChange?: (id: number, categories: Category[]) => void;
 }
 
-export default function RecordCard({ record, rotation, onClick, onDelete, onEdit }: RecordCardProps) {
+export default function RecordCard({ record, rotation, onClick, onDelete, onEdit, onCategoriesChange }: RecordCardProps) {
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(record.content);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [editingCategories, setEditingCategories] = useState(false);
+
+  const toggleCategory = (cat: Category) => {
+    if (!onCategoriesChange || record.id == null) return;
+    const current = record.categories;
+    const updated = current.includes(cat)
+      ? current.filter(c => c !== cat)
+      : [...current, cat];
+    onCategoriesChange(record.id, updated);
+  };
 
   const preview = record.content.length > 120
     ? record.content.slice(0, 120) + '...'
@@ -97,11 +109,40 @@ export default function RecordCard({ record, rotation, onClick, onDelete, onEdit
         <p className="text-sm text-[var(--text-primary)] leading-relaxed mb-3">{preview}</p>
       )}
 
-      {/* Categories */}
-      {record.categories.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {record.categories.map(cat => (
-            <CategoryTag key={cat} category={cat} size="sm" />
+      {/* Categories — click to toggle picker */}
+      <div className="flex flex-wrap gap-1 items-center" onClick={e => e.stopPropagation()}>
+        {record.categories.map(cat => (
+          <CategoryTag key={cat} category={cat} size="sm" />
+        ))}
+        <button
+          onClick={() => setEditingCategories(!editingCategories)}
+          className="text-[10px] px-1.5 py-0.5 rounded-full transition-colors"
+          style={{
+            background: editingCategories ? 'var(--pink-barbie)' : 'rgba(255,255,255,0.5)',
+            color: editingCategories ? 'white' : 'var(--text-secondary)',
+            border: '1px solid rgba(255,20,147,0.15)',
+          }}
+        >
+          {editingCategories ? '收起' : '+ 分类'}
+        </button>
+      </div>
+
+      {/* Category picker */}
+      {editingCategories && (
+        <div className="mt-2 flex flex-wrap gap-1 animate-fade-in" onClick={e => e.stopPropagation()}>
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              onClick={() => toggleCategory(cat)}
+              className="text-[11px] px-2 py-0.5 rounded-full transition-all"
+              style={{
+                background: record.categories.includes(cat) ? 'var(--pink-barbie)' : 'rgba(255,255,255,0.4)',
+                color: record.categories.includes(cat) ? 'white' : 'var(--text-secondary)',
+                border: `1px solid ${record.categories.includes(cat) ? 'transparent' : 'rgba(255,20,147,0.15)'}`,
+              }}
+            >
+              {cat}
+            </button>
           ))}
         </div>
       )}

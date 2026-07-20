@@ -56,6 +56,16 @@ export default function TimelineView({ selectedCategory = null }: TimelineViewPr
     }
   }, []);
 
+  const handleCategoriesChange = useCallback(async (id: number, categories: Category[]) => {
+    try {
+      const db = getDB();
+      await db.records.update(id, { categories });
+      setRecords(prev => prev.map(r => r.id === id ? { ...r, categories } : r));
+    } catch (err) {
+      console.error('Failed to update categories:', err);
+    }
+  }, []);
+
   // Group records by date
   const grouped: Record<number, AppRecord[]> = {};
   records.forEach((rec) => {
@@ -119,6 +129,7 @@ export default function TimelineView({ selectedCategory = null }: TimelineViewPr
                     rotation={rotation}
                     onDelete={handleDelete}
                     onEdit={handleEdit}
+                    onCategoriesChange={handleCategoriesChange}
                   />
                 );
               })}
