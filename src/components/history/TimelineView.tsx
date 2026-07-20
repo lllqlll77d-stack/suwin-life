@@ -7,10 +7,10 @@ import { formatDate } from '@/lib/utils';
 import RecordCard from './RecordCard';
 
 interface TimelineViewProps {
-  selectedCategories?: Category[];
+  selectedCategory?: Category | null;
 }
 
-export default function TimelineView({ selectedCategories = [] }: TimelineViewProps) {
+export default function TimelineView({ selectedCategory = null }: TimelineViewProps) {
   const [records, setRecords] = useState<AppRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -19,10 +19,10 @@ export default function TimelineView({ selectedCategories = [] }: TimelineViewPr
     try {
       const db = getDB();
       const query = db.records.orderBy('timestamp').reverse();
-      if (selectedCategories.length > 0) {
+      if (selectedCategory) {
         const results = await query.toArray();
         setRecords(results.filter(r =>
-          selectedCategories.some(cat => r.categories.includes(cat))
+          r.categories.includes(selectedCategory)
         ));
       } else {
         setRecords(await query.toArray());
@@ -32,7 +32,7 @@ export default function TimelineView({ selectedCategories = [] }: TimelineViewPr
     } finally {
       setLoading(false);
     }
-  }, [selectedCategories]);
+  }, [selectedCategory]);
 
   useEffect(() => { loadRecords(); }, [loadRecords, refreshKey]);
 
@@ -79,10 +79,10 @@ export default function TimelineView({ selectedCategories = [] }: TimelineViewPr
       <div className="flex-1 flex flex-col items-center justify-center px-8 py-16 text-center">
         <span className="text-5xl mb-4">📔</span>
         <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
-          {selectedCategories.length > 0 ? '该分类下暂无记录' : '还没有记录'}
+          {selectedCategory ? '该分类下暂无记录' : '还没有记录'}
         </h3>
         <p className="text-sm text-[var(--text-secondary)]">
-          {selectedCategories.length > 0
+          {selectedCategory
             ? '试试选择其他分类标签吧 ✨'
             : '去聊天页面开始记录你的第一天吧 🌸'}
         </p>

@@ -7,7 +7,7 @@ import TimelineView from '@/components/history/TimelineView';
 import type { Category } from '@/types';
 
 export default function HistoryPage() {
-  const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
   return (
     <div
@@ -23,14 +23,14 @@ export default function HistoryPage() {
       {/* Category filter */}
       <div className="pt-6 pb-1 px-4">
         <CategoryFilter
-          selected={selectedCategories}
-          onChange={setSelectedCategories}
+          selected={selectedCategory}
+          onChange={setSelectedCategory}
         />
       </div>
 
       {/* Timeline */}
       <main className="flex-1 flex flex-col pb-24 md:pb-0">
-        <TimelineView selectedCategories={selectedCategories} />
+        <TimelineView selectedCategory={selectedCategory} />
       </main>
 
       <NavBar />
