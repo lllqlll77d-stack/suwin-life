@@ -5,6 +5,9 @@
 
 import { NextRequest } from 'next/server';
 
+// Force dynamic rendering — env vars must be read at request time
+export const dynamic = 'force-dynamic';
+
 function getSitePassword(): string | null {
   const pw = process.env.SITE_PASSWORD;
   if (!pw || pw === '') return null;
@@ -35,7 +38,7 @@ function hashPassword(password: string): string {
   return Math.abs(hash).toString(36) + '.' + Math.abs(hash2).toString(36);
 }
 
-export async function GET() {
+export async function GET(_request: NextRequest) {
   const configured = !!getSitePassword();
   return Response.json({ configured });
 }
