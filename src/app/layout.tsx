@@ -33,13 +33,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const passwordConfigured = !!process.env.SITE_PASSWORD;
+
   return (
     <html
       lang="zh-CN"
       className={`${geistSans.variable} ${geistMono.variable} ${pressStart2P.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <PasswordGate>
+        <PasswordGate passwordConfigured={passwordConfigured}>
           <PageResetHandler />
           {children}
         </PasswordGate>

@@ -1,11 +1,9 @@
 // ============================================================
 // POST /api/auth — Verify site access password
-// GET  /api/auth — Check if password protection is configured
 // ============================================================
 
 import { NextRequest } from 'next/server';
 
-// Force dynamic rendering — env vars must be read at request time
 export const dynamic = 'force-dynamic';
 
 function getSitePassword(): string | null {
@@ -15,19 +13,14 @@ function getSitePassword(): string | null {
 }
 
 function hashPassword(password: string): string {
-  // Simple SHA-256 hash so we don't store raw token in localStorage
-  // Uses Web Crypto API available in Node.js 19+
   const encoder = new TextEncoder();
   const data = encoder.encode(`site-auth:${password}`);
-  // Use a simple but fast hash — crypto.subtle isn't sync, so we use a
-  // readable hex digest of the password prefixed for the token
   let hash = 0;
   for (let i = 0; i < data.length; i++) {
     const byte = data[i]!;
     hash = ((hash << 5) - hash) + byte;
-    hash |= 0; // Convert to 32-bit integer
+    hash |= 0;
   }
-  // Mix with a salt and encode as hex
   const salt = 'suwin-site-gate';
   const combined = salt + password;
   let hash2 = 0;
@@ -36,11 +29,6 @@ function hashPassword(password: string): string {
     hash2 |= 0;
   }
   return Math.abs(hash).toString(36) + '.' + Math.abs(hash2).toString(36);
-}
-
-export async function GET(_request: NextRequest) {
-  const configured = !!getSitePassword();
-  return Response.json({ configured });
 }
 
 export async function POST(request: NextRequest) {

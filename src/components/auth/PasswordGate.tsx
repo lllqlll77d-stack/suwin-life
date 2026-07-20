@@ -4,44 +4,26 @@ import { useState, useEffect, useCallback, type ReactNode } from 'react';
 
 const AUTH_STORAGE_KEY = 'site_auth_token';
 
-export default function PasswordGate({ children }: { children: ReactNode }) {
+export default function PasswordGate({
+  passwordConfigured,
+  children,
+}: {
+  passwordConfigured: boolean;
+  children: ReactNode;
+}) {
   const [authed, setAuthed] = useState(false);
-  const [checking, setChecking] = useState(true); // initial localStorage check
+  const [checking, setChecking] = useState(true);
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [configured, setConfigured] = useState(true);
 
-  // On mount: check localStorage + verify server still has password configured
+  // On mount: check localStorage for existing auth token
   useEffect(() => {
     const token = localStorage.getItem(AUTH_STORAGE_KEY);
     if (token) {
-      // Quick check: is password protection still configured?
-      fetch('/api/auth')
-        .then(r => r.json())
-        .then(data => {
-          if (data.configured) {
-            setAuthed(true);
-          } else {
-            // Password protection was removed — clear stale token
-            localStorage.removeItem(AUTH_STORAGE_KEY);
-            setConfigured(false);
-          }
-        })
-        .catch(() => setAuthed(!!token))
-        .finally(() => setChecking(false));
-    } else {
-      // Check if password is configured at all
-      fetch('/api/auth')
-        .then(r => r.json())
-        .then(data => {
-          if (!data.configured) {
-            setConfigured(false);
-          }
-        })
-        .catch(() => {})
-        .finally(() => setChecking(false));
+      setAuthed(true);
     }
+    setChecking(false);
   }, []);
 
   const handleSubmit = useCallback(async () => {
@@ -84,7 +66,7 @@ export default function PasswordGate({ children }: { children: ReactNode }) {
   if (checking) return null;
 
   // If password protection is not configured, skip the gate entirely
-  if (!configured) return <>{children}</>;
+  if (!passwordConfigured) return <>{children}</>;
 
   // Already authenticated — render the app
   if (authed) return <>{children}</>;
