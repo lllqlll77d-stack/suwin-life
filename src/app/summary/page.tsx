@@ -196,7 +196,7 @@ export default function SummaryPage() {
   // Generic empty state
   const renderEmptyState = (message: string, onGenerate: () => void, isLoading: boolean, btnLabel: string) => (
     <div className="text-center py-16 animate-fade-in">
-      <span className="text-5xl mb-4 block">📝</span>
+      <img src="/图片/empty-summary.png" alt="" className="w-24 h-24 mb-4 object-contain mx-auto block" />
       <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">暂无总结</h3>
       <p className="text-sm text-[var(--text-secondary)] mb-6">{message}</p>
       <button

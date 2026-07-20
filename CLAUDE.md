@@ -25,10 +25,14 @@ This is a **Next.js 16 App Router** app — a personal AI companion called "Suwi
 
 **Password protection** — `PasswordGate` client component (`src/components/auth/PasswordGate.tsx`) wraps the entire app in the root layout. On first visit, shows a password input page; on correct entry, stores a hashed token in `localStorage` so repeat visits skip the gate. Password is verified server-side via `POST /api/auth` against the `SITE_PASSWORD` env var. If `SITE_PASSWORD` is unset, the gate is skipped entirely.
 
-**Three API routes** (server-side via App Router route handlers):
-- `POST /api/chat` — Main chat: SSE streaming. Injects relevant memories into the system prompt, streams the DeepSeek response token-by-token, parses a `<<<CLASSIFY>>>` block from the response for category tagging, and fires background memory extraction.
-- `POST /api/summarize` — Takes a date + array of records, asks DeepSeek for a structured JSON summary (content, highlights, suggestions).
-- `POST /api/auth` — Verifies a password against `SITE_PASSWORD` env var, returns a hashed token for localStorage persistence. `GET /api/auth` returns whether password protection is configured.
+**Auto-summary generation** — `AutoSummaryGenerator` runs on every app load (injected in root layout). Checks if today is Sunday (after 6pm) or the last day of the month (after 6pm), and if the corresponding weekly/monthly summary doesn't exist yet, auto-generates it in the background. Also catches up on missed summaries from previous periods.
+
+**Five API routes** (server-side via App Router route handlers):
+- `POST /api/chat` — Main chat: SSE streaming with memory injection, classification parsing, background memory extraction.
+- `POST /api/summarize` — Daily summary from date + records.
+- `POST /api/summarize-weekly` — Weekly summary from week range + records.
+- `POST /api/summarize-monthly` — Monthly summary from year/month + records.
+- `POST /api/auth` — Password verification against `SITE_PASSWORD` env var.
 
 **Data layer** — client-side IndexedDB via Dexie.js (`src/lib/db.ts`) with three tables:
 - `records` — Every user message + AI response, indexed by timestamp and categories
