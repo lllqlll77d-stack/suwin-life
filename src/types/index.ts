@@ -45,6 +45,7 @@ export interface ChatMessage {
   categories?: Category[];
   timestamp: number;
   isStreaming?: boolean;
+  recordId?: number;        // IndexedDB record id for edit/delete
 }
 
 export interface ChatRequest {

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import type { ChatMessage } from '@/types';
+import { useChatContext } from '@/contexts/ChatContext';
 import ChatBubble from './ChatBubble';
 
 interface ChatMessageListProps {
@@ -10,6 +11,7 @@ interface ChatMessageListProps {
 
 export default function ChatMessageList({ messages }: ChatMessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const { deleteMessage, editMessage } = useChatContext();
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -47,7 +49,12 @@ export default function ChatMessageList({ messages }: ChatMessageListProps) {
     <div className="flex-1 overflow-y-auto px-3 md:px-4 py-4">
       <div className="flex flex-col gap-4 max-w-2xl mx-auto">
         {messages.map((msg) => (
-          <ChatBubble key={msg.id} message={msg} />
+          <ChatBubble
+            key={msg.id}
+            message={msg}
+            onDelete={deleteMessage}
+            onEdit={editMessage}
+          />
         ))}
         <div ref={bottomRef} />
       </div>

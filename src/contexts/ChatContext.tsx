@@ -33,9 +33,11 @@ type ChatAction =
   | { type: 'ADD_USER_MESSAGE'; payload: ChatMessage }
   | { type: 'START_AI_RESPONSE'; payload: { msgId: string } }
   | { type: 'APPEND_AI_CHUNK'; payload: { msgId: string; chunk: string } }
-  | { type: 'FINISH_AI_RESPONSE'; payload: { msgId: string; categories: Category[]; cleanContent?: string } }
+  | { type: 'FINISH_AI_RESPONSE'; payload: { msgId: string; categories: Category[]; cleanContent?: string; recordId?: number } }
   | { type: 'AI_ERROR'; payload: { msgId: string; error: string } }
   | { type: 'SET_PET_STATE'; payload: PetState }
+  | { type: 'DELETE_USER_MESSAGE'; payload: { userMsgId: string } }
+  | { type: 'UPDATE_MESSAGE_CONTENT'; payload: { msgId: string; content: string } }
   | { type: 'CLEAR' };
 
 function chatReducer(state: ChatState, action: ChatAction): ChatState {
@@ -76,12 +78,18 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
     case 'FINISH_AI_RESPONSE': {
       return {
         ...state,
-        messages: state.messages.map(m =>
-          m.id === action.payload.msgId
-            ? { ...m, isStreaming: false, categories: action.payload.categories,
-                content: action.payload.cleanContent || m.content }
-            : m
-        ),
+        messages: state.messages.map(m => {
+          // Update the AI message
+          if (m.id === action.payload.msgId) {
+            return { ...m, isStreaming: false, categories: action.payload.categories,
+              content: action.payload.cleanContent || m.content, recordId: action.payload.recordId };
+          }
+          // Store recordId on the preceding user message too (for edit/delete)
+          if (action.payload.recordId && m.role === 'user' && !m.recordId) {
+            return { ...m, recordId: action.payload.recordId };
+          }
+          return m;
+        }),
         isStreaming: false,
         petState: 'happy',
       };
@@ -103,7 +111,32 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
     case 'SET_PET_STATE':
       return { ...state, petState: action.payload };
 
-    case 'CLEAR':
+    case 'DELETE_USER_MESSAGE': {
+      const { userMsgId } = action.payload;
+      const idx = state.messages.findIndex(m => m.id === userMsgId);
+      if (idx === -1) return state;
+      // Remove the user message + the next message (AI response) if it exists
+      const nextMsg = state.messages[idx + 1];
+      const removeIds = new Set([userMsgId]);
+      if (nextMsg && nextMsg.role === 'assistant') {
+        removeIds.add(nextMsg.id);
+      }
+      return {
+        ...state,
+        messages: state.messages.filter(m => !removeIds.has(m.id)),
+      };
+    }
+
+    case 'UPDATE_MESSAGE_CONTENT': {
+      return {
+        ...state,
+        messages: state.messages.map(m =>
+          m.id === action.payload.msgId
+            ? { ...m, content: action.payload.content }
+            : m
+        ),
+      };
+    }
       return initialState;
 
     default:
@@ -116,6 +149,8 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
 interface ChatContextValue {
   state: ChatState;
   sendMessage: (text: string) => Promise<void>;
+  deleteMessage: (userMsgId: string) => void;
+  editMessage: (msgId: string, newContent: string) => void;
   clearChat: () => void;
 }
 
@@ -227,9 +262,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       }
 
       // 5. Save record to IndexedDB after successful exchange
+      let savedRecordId: number | undefined;
       try {
         const db = getDB();
-        await db.records.add({
+        savedRecordId = await db.records.add({
           content: text,
           timestamp: Date.now(),
           categories: savedCategories,
@@ -238,6 +274,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         });
       } catch (dbErr) {
         console.warn('Failed to save record to IndexedDB:', dbErr);
+      }
+      // Re-dispatch FINISH with recordId if there's still a chance
+      // (recordId was captured after the first dispatch, update via another dispatch)
+      if (savedRecordId != null) {
+        dispatch({
+          type: 'FINISH_AI_RESPONSE',
+          payload: { msgId: aiMsgId, categories: savedCategories, cleanContent: undefined, recordId: savedRecordId },
+        });
       }
 
     } catch (err) {
@@ -252,12 +296,36 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     }
   }, [state.messages]);
 
+  const deleteMessage = useCallback((userMsgId: string) => {
+    // Remove from IndexedDB if we have a recordId
+    const msg = state.messages.find(m => m.id === userMsgId);
+    if (msg?.recordId != null) {
+      try {
+        const db = getDB();
+        db.records.delete(msg.recordId);
+      } catch { /* non-blocking */ }
+    }
+    dispatch({ type: 'DELETE_USER_MESSAGE', payload: { userMsgId } });
+  }, [state.messages]);
+
+  const editMessage = useCallback((msgId: string, newContent: string) => {
+    // Update in IndexedDB if we have a recordId
+    const msg = state.messages.find(m => m.id === msgId);
+    if (msg?.recordId != null) {
+      try {
+        const db = getDB();
+        db.records.update(msg.recordId, { content: newContent });
+      } catch { /* non-blocking */ }
+    }
+    dispatch({ type: 'UPDATE_MESSAGE_CONTENT', payload: { msgId, content: newContent } });
+  }, [state.messages]);
+
   const clearChat = useCallback(() => {
     dispatch({ type: 'CLEAR' });
   }, []);
 
   return (
-    <ChatContext.Provider value={{ state, sendMessage, clearChat }}>
+    <ChatContext.Provider value={{ state, sendMessage, deleteMessage, editMessage, clearChat }}>
       {children}
     </ChatContext.Provider>
   );
