@@ -1,13 +1,22 @@
 'use client';
 
-import type { DailySummary } from '@/types';
 import DecorativeBorder from '@/components/shared/DecorativeBorder';
 
-interface SummaryCardProps {
-  summary: DailySummary;
+interface SummaryData {
+  id: string;
+  date: string;
+  content: string;
+  highlights: string[];
+  suggestions: string[];
+  generatedAt: number;
 }
 
-export default function SummaryCard({ summary }: SummaryCardProps) {
+interface SummaryCardProps {
+  summary: SummaryData;
+  extraInfo?: string; // e.g. "📝 23 条记录"
+}
+
+export default function SummaryCard({ summary, extraInfo }: SummaryCardProps) {
   return (
     <DecorativeBorder variant="watercolor" className="animate-slide-up">
       {/* Summary content */}
@@ -21,7 +30,7 @@ export default function SummaryCard({ summary }: SummaryCardProps) {
       {summary.highlights.length > 0 && (
         <div className="mt-5 pt-4 border-t border-[var(--pink-blush)]">
           <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-1">
-            <span>✨</span> 今日亮点
+            <span>✨</span> 亮点
           </h4>
           <ul className="space-y-1.5">
             {summary.highlights.map((h, i) => (
@@ -41,7 +50,7 @@ export default function SummaryCard({ summary }: SummaryCardProps) {
       {summary.suggestions.length > 0 && (
         <div className="mt-4 pt-4 border-t border-[var(--pink-blush)]">
           <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-1">
-            <span>💡</span> 小建议
+            <span>💡</span> 建议
           </h4>
           <ul className="space-y-1.5">
             {summary.suggestions.map((s, i) => (
@@ -57,13 +66,16 @@ export default function SummaryCard({ summary }: SummaryCardProps) {
         </div>
       )}
 
-      {/* Generated time */}
-      <p className="mt-4 text-[10px] text-[var(--text-secondary)] opacity-50 text-right">
-        Generated at {new Date(summary.generatedAt).toLocaleTimeString('zh-CN', {
-          hour: '2-digit',
-          minute: '2-digit',
-        })}
-      </p>
+      {/* Footer */}
+      <div className="mt-4 flex items-center justify-between text-[10px] text-[var(--text-secondary)] opacity-50">
+        {extraInfo && <span>{extraInfo}</span>}
+        <span className={extraInfo ? '' : 'ml-auto'}>
+          Generated at {new Date(summary.generatedAt).toLocaleTimeString('zh-CN', {
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        </span>
+      </div>
     </DecorativeBorder>
   );
 }

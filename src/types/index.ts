@@ -27,6 +27,26 @@ export interface DailySummary {
   generatedAt: number;      // timestamp when generated
 }
 
+export interface WeeklySummary {
+  id: string;               // "2026-W29"
+  weekStart: string;        // "2026-07-13" (Monday)
+  weekEnd: string;          // "2026-07-19" (Sunday)
+  content: string;
+  highlights: string[];
+  recordCount: number;      // how many records this week
+  generatedAt: number;
+}
+
+export interface MonthlySummary {
+  id: string;               // "2026-07"
+  year: number;
+  month: number;
+  content: string;
+  highlights: string[];
+  recordCount: number;
+  generatedAt: number;
+}
+
 export interface Memory {
   id?: number;              // auto-increment
   key: string;              // short label, e.g. "career_job_title"

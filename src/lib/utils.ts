@@ -71,6 +71,77 @@ export const CATEGORY_CONFIG: Record<Category, { emoji: string; color: string }>
   '灵感': { emoji: '✨', color: '#FFD1DC' },
 };
 
+// ---- Week & Month Helpers ----
+
+/** Get ISO week id: "2026-W29" */
+export function getWeekId(date: Date = new Date()): string {
+  const d = new Date(date);
+  const dayNum = d.getDay() || 7; // Make Sunday = 7
+  d.setDate(d.getDate() + 4 - dayNum); // Adjust to Thursday
+  const year = d.getFullYear();
+  const weekNum = Math.ceil(
+    ((d.getTime() - new Date(year, 0, 1).getTime()) / 86400000 + 1) / 7
+  );
+  return `${year}-W${String(weekNum).padStart(2, '0')}`;
+}
+
+/** Get month id: "2026-07" */
+export function getMonthId(date: Date = new Date()): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+/** Is today Sunday? */
+export function isSunday(date: Date = new Date()): boolean {
+  return date.getDay() === 0;
+}
+
+/** Is today the last day of the month? */
+export function isLastDayOfMonth(date: Date = new Date()): boolean {
+  const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  return date.getDate() === lastDay;
+}
+
+/** Get Monday + Sunday date strings for a given date's week */
+export function getWeekRange(date: Date = new Date()): { monday: string; sunday: string } {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diffToMonday);
+  const monday = toDateString(d.getTime());
+  d.setDate(d.getDate() + 6);
+  const sunday = toDateString(d.getTime());
+  return { monday, sunday };
+}
+
+/** Get first + last day strings for a given date's month */
+export function getMonthRange(date: Date = new Date()): { first: string; last: string } {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const first = `${year}-${String(month + 1).padStart(2, '0')}-01`;
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  const last = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+  return { first, last };
+}
+
+/** Get the previous week's id */
+export function getPreviousWeekId(): string {
+  const d = new Date();
+  d.setDate(d.getDate() - 7);
+  return getWeekId(d);
+}
+
+/** Get the previous month's id */
+export function getPreviousMonthId(): string {
+  const d = new Date();
+  d.setMonth(d.getMonth() - 1);
+  return getMonthId(d);
+}
+
+/** Check if current time is at or after the given hour */
+export function isPastHour(hour: number): boolean {
+  return new Date().getHours() >= hour;
+}
+
 // ---- UUID Generator (simple, no dependency needed) ----
 export function uuid(): string {
   return crypto.randomUUID?.() ??

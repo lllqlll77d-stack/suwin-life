@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Press_Start_2P } from "next/font/google";
 import "./globals.css";
 import PageResetHandler from "@/components/shared/PageResetHandler";
 import PasswordGate from "@/components/auth/PasswordGate";
+import AutoSummaryGenerator from "@/components/summary/AutoSummaryGenerator";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <PasswordGate passwordConfigured={passwordConfigured}>
+          <AutoSummaryGenerator />
           <PageResetHandler />
           {children}
         </PasswordGate>
