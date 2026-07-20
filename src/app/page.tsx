@@ -39,7 +39,7 @@ export default function LoadingPage() {
               lineHeight: 1.6,
             }}
           >
-            Suwin&apos;s Life
+            Suwin&apos;s Cosmos
           </h1>
         </div>
 

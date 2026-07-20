@@ -21,7 +21,7 @@ const pressStart2P = Press_Start_2P({
 });
 
 export const metadata: Metadata = {
-  title: "Suwin's Life ✨",
+  title: "Suwin's Cosmos ✨",
   description: "Suwin的个人AI数字伙伴 — 记录、陪伴、成长",
   icons: {
     icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>",

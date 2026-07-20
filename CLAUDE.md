@@ -15,7 +15,7 @@ No test runner is configured yet.
 
 ## Architecture
 
-This is a **Next.js 16 App Router** app — a personal AI companion called "Suwin's Life". It's a chat-based journal where the user shares daily experiences and the AI (DeepSeek) responds conversationally, classifies entries, extracts long-term memories, and generates daily summaries.
+This is a **Next.js 16 App Router** app — a personal AI companion called "Suwin's Cosmos". It's a chat-based journal where the user shares daily experiences and the AI (DeepSeek) responds conversationally, classifies entries, extracts long-term memories, and generates daily summaries.
 
 **Three client-side pages** (all `'use client'`, Y2K pink aesthetic with glass morphism):
 - `/` — Loading/enter screen with animated progress bar → navigates to `/chat`

@@ -120,7 +120,7 @@ export default function PasswordGate({
             color: 'var(--text-primary)',
           }}
         >
-          Suwin&apos;s Life
+          Suwin&apos;s Cosmos
         </h1>
         <p
           className="text-sm mb-6"
