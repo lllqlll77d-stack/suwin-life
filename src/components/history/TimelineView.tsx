@@ -6,9 +6,12 @@ import { getDB } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
 import RecordCard from './RecordCard';
 
-export default function TimelineView() {
+interface TimelineViewProps {
+  selectedCategories?: Category[];
+}
+
+export default function TimelineView({ selectedCategories = [] }: TimelineViewProps) {
   const [records, setRecords] = useState<AppRecord[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
 

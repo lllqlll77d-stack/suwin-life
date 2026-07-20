@@ -30,7 +30,7 @@ export default function HistoryPage() {
 
       {/* Timeline */}
       <main className="flex-1 flex flex-col pb-24 md:pb-0">
-        <TimelineView />
+        <TimelineView selectedCategories={selectedCategories} />
       </main>
 
       <NavBar />
