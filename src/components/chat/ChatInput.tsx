@@ -32,7 +32,7 @@ export default function ChatInput({ onSend, disabled = false }: ChatInputProps) 
   return (
     <div className="chat-input-shell">
       <textarea ref={textareaRef} value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={handleKeyDown}
-        placeholder="今天，有什么想留下来的？" aria-label="聊天消息" disabled={disabled} rows={1} />
+        aria-label="聊天消息" disabled={disabled} rows={1} />
       <button className="send-button" onClick={handleSend} disabled={disabled || !input.trim()} aria-label="发送消息">
         <span className="send-label">SEND</span><span aria-hidden="true">↗</span>
       </button>

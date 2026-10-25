@@ -82,7 +82,7 @@ export default function TimelineView({ selectedCategory = null }: TimelineViewPr
       <div className="empty-state">
         <span className="empty-state-symbol" aria-hidden="true">✧</span>
         <h2>{selectedCategory ? '这里还没有这类记忆' : '故事，从第一条记录开始'}</h2>
-        <p>{selectedCategory ? '换一个分类，看看其他生活片段。' : '那些平凡的小事，也值得被好好记住。'}</p>
+        {selectedCategory && <p>换一个分类，看看其他生活片段。</p>}
         {!selectedCategory && <Link href="/chat" className="outline-button">写下第一条记录 ↗</Link>}
       </div>
     );

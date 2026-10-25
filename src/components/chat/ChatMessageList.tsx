@@ -19,7 +19,6 @@ export default function ChatMessageList({ messages }: { messages: ChatMessage[] 
       <div className="chat-welcome">
         <div className="pixel-star" aria-hidden="true">✧</div>
         <h1>what&apos;s on<br />your mind?</h1>
-        <p>今天的心情、突然的灵感，或者一件很小的事。<br />从哪里开始都好，我在这里听你说。</p>
       </div>
     );
   }

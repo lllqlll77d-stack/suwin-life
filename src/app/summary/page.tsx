@@ -208,14 +208,14 @@ export default function SummaryPage() {
     id: monthly.id, date: `${monthly.year}年${monthly.month}月`, content: monthly.content, highlights: monthly.highlights, suggestions: [], generatedAt: monthly.generatedAt,
   } : null;
   const extraInfo = tab === 'weekly' && weekly ? `${weekly.recordCount} 条记录` : tab === 'monthly' && monthly ? `${monthly.recordCount} 条记录` : undefined;
-  const emptyMessage = tab === 'daily' ? '把一天的片段，整理成值得留下的一页。' : tab === 'weekly' ? '回看这一周的起伏与收获。周日 18:00 后自动生成。' : '看看这个月，你走过了怎样的路。月末 18:00 后自动生成。';
+  const emptyMessage = tab === 'daily' ? '' : tab === 'weekly' ? '回看这一周的起伏与收获。周日 18:00 后自动生成。' : '看看这个月，你走过了怎样的路。月末 18:00 后自动生成。';
 
   return (
     <div className="site-page">
       <AmbientVideo subdued />
       <NavBar />
       <main id="main-content" className="content-main">
-        <PageIntro index="03" title="see how far you've come" description="把零散的日常连起来，发现属于自己的节奏。" />
+        <PageIntro index="03" title="see how far you've come" />
         <div className="section-toolbar summary-toolbar">
           <div className="period-tabs" role="group" aria-label="总结周期">
             {tabs.map(item => <button key={item.key} onClick={() => { setTab(item.key); setError(''); }} className={`capsule-tab ${tab === item.key ? 'active' : ''}`} aria-pressed={tab === item.key} disabled={generating || weeklyGenerating || monthlyGenerating}>{item.label}</button>)}
@@ -231,7 +231,7 @@ export default function SummaryPage() {
             <div className="empty-state">
               <span className="empty-state-symbol" aria-hidden="true">✧</span>
               <h2>{tab === 'daily' ? '让今天，留下回响' : tab === 'weekly' ? '一周，慢慢看' : '给这个月，写一个小结'}</h2>
-              <p>{emptyMessage}</p>
+              {emptyMessage && <p>{emptyMessage}</p>}
               {error && <p className="error-text" role="alert">{error}</p>}
               <button className="outline-button" onClick={generate} disabled={busy}>{busy ? '正在整理你的回忆…' : error ? '重新生成 ↗' : '生成总结 ↗'}</button>
             </div>

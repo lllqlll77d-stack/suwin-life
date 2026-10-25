@@ -17,7 +17,6 @@ function ChatContent() {
         <ChatMessageList messages={state.messages} />
         <div className="chat-composer">
           <ChatInput onSend={sendMessage} disabled={state.isStreaming} />
-          <p className="composer-hint">Enter 发送 <span aria-hidden="true">·</span> Shift + Enter 换行</p>
         </div>
       </main>
     </div>

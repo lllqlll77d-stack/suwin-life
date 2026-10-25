@@ -15,7 +15,7 @@ export default function HistoryPage() {
       <AmbientVideo subdued />
       <NavBar />
       <main id="main-content" className="content-main">
-        <PageIntro index="02" title="a constellation of memories" description="那些随手记下的日常，慢慢连成了你的轨迹。" />
+        <PageIntro index="02" title="a constellation of memories" />
         <div className="section-toolbar"><CategoryFilter selected={selectedCategory} onChange={setSelectedCategory} /></div>
         <TimelineView selectedCategory={selectedCategory} />
       </main>
