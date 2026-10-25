@@ -1,10 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 const VIDEO_SOURCE = '/media/cosmos-background.mp4';
 
-export default function AmbientVideo({ subdued = false }: { subdued?: boolean }) {
+export default function AmbientVideo() {
+  const pathname = usePathname();
+  const subdued = pathname !== '/';
   const videoRef = useRef<HTMLVideoElement>(null);
   const userPaused = useRef(false);
   const [playing, setPlaying] = useState(false);

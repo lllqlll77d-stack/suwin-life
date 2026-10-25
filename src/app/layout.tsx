@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import PageResetHandler from "@/components/shared/PageResetHandler";
+import AmbientVideo from "@/components/layout/AmbientVideo";
 import PasswordGate from "@/components/auth/PasswordGate";
 import AutoSummaryGenerator from "@/components/summary/AutoSummaryGenerator";
 
@@ -32,11 +33,14 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${displayFont.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <div className="app-shell">
+        <AmbientVideo />
         <PasswordGate passwordConfigured={passwordConfigured}>
           <AutoSummaryGenerator />
           <PageResetHandler />
           {children}
         </PasswordGate>
+        </div>
       </body>
     </html>
   );

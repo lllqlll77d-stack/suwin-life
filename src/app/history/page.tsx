@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import NavBar from '@/components/layout/NavBar';
-import AmbientVideo from '@/components/layout/AmbientVideo';
 import PageIntro from '@/components/layout/PageIntro';
 import CategoryFilter from '@/components/history/CategoryFilter';
 import TimelineView from '@/components/history/TimelineView';
@@ -12,7 +11,6 @@ export default function HistoryPage() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   return (
     <div className="site-page">
-      <AmbientVideo subdued />
       <NavBar />
       <main id="main-content" className="content-main">
         <PageIntro index="02" title="a constellation of memories" />

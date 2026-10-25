@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, type ReactNode } from 'react';
 
-import AmbientVideo from '@/components/layout/AmbientVideo';
 import SiteBrand from '@/components/layout/SiteBrand';
 
 const AUTH_STORAGE_KEY = 'site_auth_token';
@@ -63,7 +62,6 @@ export default function PasswordGate({
 
   return (
     <div className="auth-page">
-      <AmbientVideo />
       <header className="auth-header"><SiteBrand /><span className="eyebrow">[ PRIVATE SPACE ]</span></header>
       <main className="auth-main">
         <h1>welcome to<br />your cosmos</h1>

@@ -62,6 +62,7 @@ textarea::placeholder, input::placeholder { color: var(--text-muted); opacity: 1
 .skip-link { position: absolute; left: 20px; top: -80px; padding: 10px; background: var(--text-primary); color: #050505; z-index: 100; }
 .skip-link:focus { top: 12px; }
 
+.app-shell { position: relative; isolation: isolate; min-height: 100dvh; }
 .cosmos-home, .site-page, .auth-page { isolation: isolate; position: relative; min-height: 100dvh; }
 .ambient-background { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: #050505 url('/media/cosmos-poster.jpg') center / cover no-repeat; }
 .ambient-video { height: 100%; width: 100%; object-fit: cover; object-position: center; transform: scale(1.12); }

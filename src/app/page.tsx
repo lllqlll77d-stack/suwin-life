@@ -1,11 +1,9 @@
 import Link from 'next/link';
 import NavBar from '@/components/layout/NavBar';
-import AmbientVideo from '@/components/layout/AmbientVideo';
 
 export default function HomePage() {
   return (
     <div className="cosmos-home">
-      <AmbientVideo />
       <NavBar />
       <main id="main-content" className="hero-stage">
         <div className="hero-copy">
