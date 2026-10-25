@@ -53,7 +53,7 @@ textarea::placeholder, input::placeholder { color: var(--text-muted); opacity: 1
 ::-webkit-scrollbar-track { background: #070707; }
 ::-webkit-scrollbar-thumb { background: #5b4643; }
 
-.site-header { position: relative; z-index: 30; width: 100%; min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 14px 24px; border-top: 1px solid var(--text-primary); }
+.site-header { position: relative; z-index: 30; width: 100%; min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 14px 24px; }
 .site-brand { display: inline-flex; align-items: center; gap: 18px; text-decoration: none; flex-shrink: 0; font-family: var(--font-display), Georgia, serif; font-size: 29px; line-height: 1; white-space: nowrap; }
 .brand-symbol { width: 26px; height: 26px; }
 .site-nav { display: flex; align-items: center; gap: clamp(8px, 2.1vw, 32px); }
@@ -157,7 +157,7 @@ button.category-pill.selected:hover { color: #230800; }
 .summary-footer { display: flex; justify-content: space-between; gap: 16px; margin-top: 30px; font-family: var(--font-geist-mono),monospace; font-size: 9px; color: var(--text-muted); }
 
 .auth-page { min-height: 100dvh; display: flex; flex-direction: column; }
-.auth-header { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 22px 28px; border-top: 1px solid var(--text-primary); }
+.auth-header { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 22px 28px; }
 .auth-main { flex: 1; width: min(560px,calc(100% - 48px)); margin: 0 auto; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 70px 0 130px; }
 .auth-main h1 { font-family: var(--font-display),Georgia,serif; font-size: clamp(56px,6vw,80px); font-weight: 400; line-height: 1; margin: 0 0 40px; }
 .auth-form { width: 100%; }
