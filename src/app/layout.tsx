@@ -1,31 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Press_Start_2P } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import PageResetHandler from "@/components/shared/PageResetHandler";
 import PasswordGate from "@/components/auth/PasswordGate";
 import AutoSummaryGenerator from "@/components/summary/AutoSummaryGenerator";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+const geistSans = localFont({ src: "../../public/fonts/geist-latin.woff2", variable: "--font-geist-sans", display: "swap" });
+const geistMono = localFont({ src: "../../public/fonts/aux-mono.woff", variable: "--font-geist-mono", display: "swap" });
+const displayFont = localFont({ src: "../../public/fonts/mondwest.woff", variable: "--font-display", display: "swap" });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const pressStart2P = Press_Start_2P({
-  variable: "--font-pixel",
-  weight: "400",
-  subsets: ["latin"],
-});
+export const viewport = { themeColor: "#050505", colorScheme: "dark" };
 
 export const metadata: Metadata = {
-  title: "Suwin's Cosmos ✨",
+  title: "Suwin's Cosmos",
   description: "Suwin的个人AI数字伙伴 — 记录、陪伴、成长",
   icons: {
-    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>",
+    icon: "/cosmos-icon.svg",
   },
 };
 
@@ -39,7 +29,7 @@ export default function RootLayout({
   return (
     <html
       lang="zh-CN"
-      className={`${geistSans.variable} ${geistMono.variable} ${pressStart2P.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${displayFont.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <PasswordGate passwordConfigured={passwordConfigured}>

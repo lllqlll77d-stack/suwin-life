@@ -2,9 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import NavBar from '@/components/layout/NavBar';
+import AmbientVideo from '@/components/layout/AmbientVideo';
+import PageIntro from '@/components/layout/PageIntro';
 import SummaryCard from '@/components/summary/SummaryCard';
 import { getDB } from '@/lib/db';
-import { todayStr, toDateString, getWeekId, getMonthId, getWeekRange, getMonthRange } from '@/lib/utils';
+import { todayStr, toDateString, getWeekId, getMonthId } from '@/lib/utils';
 import type { DailySummary, WeeklySummary, MonthlySummary } from '@/types';
 
 type Tab = 'daily' | 'weekly' | 'monthly';
@@ -56,7 +58,7 @@ export default function SummaryPage() {
       const start = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
       const end = start + 24 * 60 * 60 * 1000 - 1;
       const records = await db.records.where('timestamp').between(start, end, true, true).toArray();
-      if (records.length === 0) { setError('该日期还没有记录，先去记录点什么吧 ✨'); setGenerating(false); return; }
+      if (records.length === 0) { setError('该日期还没有记录，先去 Chat 写下今天的故事吧。'); setGenerating(false); return; }
       const res = await fetch('/api/summarize', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ date: selectedDate, records: records.map(r => ({ content: r.content, categories: r.categories, timestamp: r.timestamp })) }),
@@ -98,7 +100,7 @@ export default function SummaryPage() {
       const startMs = monday.getTime();
       const endMs = sunday.getTime() + 24 * 60 * 60 * 1000 - 1;
       const records = await db.records.where('timestamp').between(startMs, endMs, true, true).toArray();
-      if (records.length === 0) { setError('该周还没有记录 ✨'); setWeeklyGenerating(false); return; }
+      if (records.length === 0) { setError('该周还没有记录。'); setWeeklyGenerating(false); return; }
       const res = await fetch('/api/summarize-weekly', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ weekStart: toDateString(startMs), weekEnd: toDateString(sunday.getTime()), records: records.map(r => ({ content: r.content, categories: r.categories, timestamp: r.timestamp })) }),
@@ -140,7 +142,7 @@ export default function SummaryPage() {
       const startMs = new Date(year, month - 1, 1).getTime();
       const endMs = new Date(year, month, 0).getTime() + 24 * 60 * 60 * 1000 - 1;
       const records = await db.records.where('timestamp').between(startMs, endMs, true, true).toArray();
-      if (records.length === 0) { setError('该月还没有记录 ✨'); setMonthlyGenerating(false); return; }
+      if (records.length === 0) { setError('该月还没有记录。'); setMonthlyGenerating(false); return; }
       const res = await fetch('/api/summarize-monthly', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ year, month, records: records.map(r => ({ content: r.content, categories: r.categories, timestamp: r.timestamp })) }),
@@ -188,139 +190,54 @@ export default function SummaryPage() {
   const isCurrentMonth = selectedMonthId === currentMonth;
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: 'daily', label: '📅 日总结' },
-    { key: 'weekly', label: '📊 周总结' },
-    { key: 'monthly', label: '🌙 月总结' },
+    { key: 'daily', label: '日 / DAILY' },
+    { key: 'weekly', label: '周 / WEEKLY' },
+    { key: 'monthly', label: '月 / MONTHLY' },
   ];
-
-  // Generic empty state
-  const renderEmptyState = (message: string, onGenerate: () => void, isLoading: boolean, btnLabel: string) => (
-    <div className="text-center py-16 animate-fade-in">
-      <img src="/图片/empty-summary.png" alt="" className="w-24 h-24 mb-4 object-contain mx-auto block" />
-      <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">暂无总结</h3>
-      <p className="text-sm text-[var(--text-secondary)] mb-6">{message}</p>
-      <button
-        onClick={onGenerate} disabled={isLoading}
-        className="px-6 py-2.5 rounded-full text-sm font-medium text-white transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
-        style={{ background: 'linear-gradient(135deg, #FF69B4, #FF1493)', boxShadow: '0 4px 16px rgba(255,20,147,0.3)' }}
-      >
-        {isLoading ? '✨ 生成中...' : btnLabel}
-      </button>
-    </div>
-  );
+  const loading = tab === 'daily' ? dailyLoading : tab === 'weekly' ? weeklyLoading : monthlyLoading;
+  const busy = tab === 'daily' ? generating : tab === 'weekly' ? weeklyGenerating : monthlyGenerating;
+  const generate = tab === 'daily' ? handleGenerateDaily : tab === 'weekly' ? handleGenerateWeekly : handleGenerateMonthly;
+  const current = tab === 'daily' ? isToday : tab === 'weekly' ? isCurrentWeek : isCurrentMonth;
+  const periodLabel = tab === 'daily' ? `${selectedDate}${isToday ? ' · 今天' : ''}` : tab === 'weekly' ? `${selectedWeekId}${isCurrentWeek ? ' · 本周' : ''}` : `${selectedMonthId}${isCurrentMonth ? ' · 本月' : ''}`;
+  const previous = () => { setError(''); if (tab === 'daily') goToPrevDay(); else if (tab === 'weekly') navigateWeek(-1); else navigateMonth(-1); };
+  const next = () => { setError(''); if (tab === 'daily') goToNextDay(); else if (tab === 'weekly') navigateWeek(1); else navigateMonth(1); };
+  const resetDate = () => { setError(''); if (tab === 'daily') goToToday(); else if (tab === 'weekly') setSelectedWeekId(currentWeek); else setSelectedMonthId(currentMonth); };
+  const summary = tab === 'daily' ? daily : tab === 'weekly' && weekly ? {
+    id: weekly.id, date: `${weekly.weekStart} ~ ${weekly.weekEnd}`, content: weekly.content, highlights: weekly.highlights, suggestions: [], generatedAt: weekly.generatedAt,
+  } : tab === 'monthly' && monthly ? {
+    id: monthly.id, date: `${monthly.year}年${monthly.month}月`, content: monthly.content, highlights: monthly.highlights, suggestions: [], generatedAt: monthly.generatedAt,
+  } : null;
+  const extraInfo = tab === 'weekly' && weekly ? `${weekly.recordCount} 条记录` : tab === 'monthly' && monthly ? `${monthly.recordCount} 条记录` : undefined;
+  const emptyMessage = tab === 'daily' ? '把一天的片段，整理成值得留下的一页。' : tab === 'weekly' ? '回看这一周的起伏与收获。周日 18:00 后自动生成。' : '看看这个月，你走过了怎样的路。月末 18:00 后自动生成。';
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ backgroundImage: 'url(/图片/summary-bg-new.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed' }}>
-      {/* Tabs */}
-      <div className="flex justify-center gap-2 pt-6 pb-1 px-4">
-        {tabs.map(t => (
-          <button
-            key={t.key}
-            onClick={() => { setTab(t.key); setError(''); }}
-            className={`capsule-tab ${tab === t.key ? 'active' : ''}`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      <main className="flex-1 flex flex-col pb-24 md:pb-0">
-        {/* ---- Daily Tab ---- */}
-        {tab === 'daily' && (
-          <>
-            <div className="flex items-center justify-center gap-3 px-4 pt-4 mb-6">
-              <button onClick={goToPrevDay} className="w-8 h-8 rounded-full flex items-center justify-center text-lg" style={{ background: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.4)' }}>←</button>
-              <button onClick={goToToday} className="text-sm font-medium px-4 py-1.5 rounded-full transition-all" style={{ background: isToday ? 'var(--pink-barbie)' : 'rgba(255,255,255,0.3)', color: isToday ? 'white' : 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.4)' }}>
-                {selectedDate}{isToday && ' (今天)'}
-              </button>
-              <button onClick={goToNextDay} disabled={isToday} className={`w-8 h-8 rounded-full flex items-center justify-center text-lg ${isToday ? 'opacity-30 cursor-not-allowed' : ''}`} style={{ background: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.4)' }}>→</button>
-            </div>
-            <div className="flex-1 px-4 flex items-center justify-center">
-              <div className="max-w-2xl mx-auto w-full">
-                {dailyLoading && <div className="text-center py-16"><p className="text-[var(--text-secondary)] animate-pulse">🌸 加载中...</p></div>}
-                {!dailyLoading && daily && <SummaryCard summary={daily} />}
-                {!dailyLoading && !daily && !error && renderEmptyState(
-                  isToday ? '需要至少有一条今日记录才能生成总结哦' : '该日期暂无总结',
-                  handleGenerateDaily, generating, '✨ 生成总结'
-                )}
-                {error && (
-                  <div className="text-center py-16 animate-fade-in">
-                    <span className="text-5xl mb-4 block">💦</span>
-                    <p className="text-sm text-red-400 mb-4">{error}</p>
-                    <button onClick={handleGenerateDaily} className="text-sm text-[var(--pink-barbie)] underline">再试一次</button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* ---- Weekly Tab ---- */}
-        {tab === 'weekly' && (
-          <>
-            <div className="flex items-center justify-center gap-3 px-4 pt-4 mb-6">
-              <button onClick={() => navigateWeek(-1)} className="w-8 h-8 rounded-full flex items-center justify-center text-lg" style={{ background: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.4)' }}>←</button>
-              <button onClick={() => setSelectedWeekId(currentWeek)} className="text-sm font-medium px-4 py-1.5 rounded-full transition-all" style={{ background: isCurrentWeek ? 'var(--pink-barbie)' : 'rgba(255,255,255,0.3)', color: isCurrentWeek ? 'white' : 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.4)' }}>
-                {selectedWeekId}{isCurrentWeek && ' (本周)'}
-              </button>
-              <button onClick={() => navigateWeek(1)} disabled={isCurrentWeek} className={`w-8 h-8 rounded-full flex items-center justify-center text-lg ${isCurrentWeek ? 'opacity-30 cursor-not-allowed' : ''}`} style={{ background: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.4)' }}>→</button>
-            </div>
-            <div className="flex-1 px-4 flex items-center justify-center">
-              <div className="max-w-2xl mx-auto w-full">
-                {weeklyLoading && <div className="text-center py-16"><p className="text-[var(--text-secondary)] animate-pulse">🌸 加载中...</p></div>}
-                {!weeklyLoading && weekly && (
-                  <SummaryCard summary={{ id: weekly.id, date: `${weekly.weekStart} ~ ${weekly.weekEnd}`, content: weekly.content, highlights: weekly.highlights, suggestions: [], generatedAt: weekly.generatedAt }} extraInfo={`📝 ${weekly.recordCount} 条记录`} />
-                )}
-                {!weeklyLoading && !weekly && !error && renderEmptyState(
-                  isCurrentWeek ? '周日 18:00 后会自动生成本周总结' : '该周暂无总结',
-                  handleGenerateWeekly, weeklyGenerating, '✨ 生成周总结'
-                )}
-                {error && (
-                  <div className="text-center py-16 animate-fade-in">
-                    <span className="text-5xl mb-4 block">💦</span>
-                    <p className="text-sm text-red-400 mb-4">{error}</p>
-                    <button onClick={handleGenerateWeekly} className="text-sm text-[var(--pink-barbie)] underline">再试一次</button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* ---- Monthly Tab ---- */}
-        {tab === 'monthly' && (
-          <>
-            <div className="flex items-center justify-center gap-3 px-4 pt-4 mb-6">
-              <button onClick={() => navigateMonth(-1)} className="w-8 h-8 rounded-full flex items-center justify-center text-lg" style={{ background: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.4)' }}>←</button>
-              <button onClick={() => setSelectedMonthId(currentMonth)} className="text-sm font-medium px-4 py-1.5 rounded-full transition-all" style={{ background: isCurrentMonth ? 'var(--pink-barbie)' : 'rgba(255,255,255,0.3)', color: isCurrentMonth ? 'white' : 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.4)' }}>
-                {selectedMonthId}{isCurrentMonth && ' (本月)'}
-              </button>
-              <button onClick={() => navigateMonth(1)} disabled={isCurrentMonth} className={`w-8 h-8 rounded-full flex items-center justify-center text-lg ${isCurrentMonth ? 'opacity-30 cursor-not-allowed' : ''}`} style={{ background: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.4)' }}>→</button>
-            </div>
-            <div className="flex-1 px-4 flex items-center justify-center">
-              <div className="max-w-2xl mx-auto w-full">
-                {monthlyLoading && <div className="text-center py-16"><p className="text-[var(--text-secondary)] animate-pulse">🌸 加载中...</p></div>}
-                {!monthlyLoading && monthly && (
-                  <SummaryCard summary={{ id: monthly.id, date: `${monthly.year}年${monthly.month}月`, content: monthly.content, highlights: monthly.highlights, suggestions: [], generatedAt: monthly.generatedAt }} extraInfo={`📝 ${monthly.recordCount} 条记录`} />
-                )}
-                {!monthlyLoading && !monthly && !error && renderEmptyState(
-                  isCurrentMonth ? '月末 18:00 后会自动生成本月总结' : '该月暂无总结',
-                  handleGenerateMonthly, monthlyGenerating, '✨ 生成月总结'
-                )}
-                {error && (
-                  <div className="text-center py-16 animate-fade-in">
-                    <span className="text-5xl mb-4 block">💦</span>
-                    <p className="text-sm text-red-400 mb-4">{error}</p>
-                    <button onClick={handleGenerateMonthly} className="text-sm text-[var(--pink-barbie)] underline">再试一次</button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-      </main>
-
+    <div className="site-page">
+      <AmbientVideo subdued />
       <NavBar />
+      <main id="main-content" className="content-main">
+        <PageIntro index="03" title="see how far you've come" description="把零散的日常连起来，发现属于自己的节奏。" />
+        <div className="section-toolbar summary-toolbar">
+          <div className="period-tabs" role="group" aria-label="总结周期">
+            {tabs.map(item => <button key={item.key} onClick={() => { setTab(item.key); setError(''); }} className={`capsule-tab ${tab === item.key ? 'active' : ''}`} aria-pressed={tab === item.key} disabled={generating || weeklyGenerating || monthlyGenerating}>{item.label}</button>)}
+          </div>
+          <div className="date-navigation">
+            <button className="mini-button" onClick={previous} disabled={busy} aria-label="上一周期">←</button>
+            <button className="date-label" onClick={resetDate} disabled={busy} aria-label="回到当前周期">{periodLabel}</button>
+            <button className="mini-button" onClick={next} disabled={current || busy} aria-label="下一周期">→</button>
+          </div>
+        </div>
+        <div className="summary-panel" aria-busy={loading || busy}>
+          {loading ? <div className="empty-state" role="status"><p>正在读取总结…</p></div> : summary ? <SummaryCard summary={summary} extraInfo={extraInfo} /> : (
+            <div className="empty-state">
+              <span className="empty-state-symbol" aria-hidden="true">✧</span>
+              <h2>{tab === 'daily' ? '让今天，留下回响' : tab === 'weekly' ? '一周，慢慢看' : '给这个月，写一个小结'}</h2>
+              <p>{emptyMessage}</p>
+              {error && <p className="error-text" role="alert">{error}</p>}
+              <button className="outline-button" onClick={generate} disabled={busy}>{busy ? '正在整理你的回忆…' : error ? '重新生成 ↗' : '生成总结 ↗'}</button>
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }

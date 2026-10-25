@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useCallback, type ReactNode } from 'react';
 
+import AmbientVideo from '@/components/layout/AmbientVideo';
+import SiteBrand from '@/components/layout/SiteBrand';
+
 const AUTH_STORAGE_KEY = 'site_auth_token';
 
 export default function PasswordGate({
@@ -19,11 +22,10 @@ export default function PasswordGate({
 
   // On mount: check localStorage for existing auth token
   useEffect(() => {
-    const token = localStorage.getItem(AUTH_STORAGE_KEY);
-    if (token) {
-      setAuthed(true);
-    }
-    setChecking(false);
+    try {
+      if (localStorage.getItem(AUTH_STORAGE_KEY)) setAuthed(true);
+    } catch { /* Password entry remains available when storage is restricted. */ }
+    finally { setChecking(false); }
   }, []);
 
   const handleSubmit = useCallback(async () => {
@@ -55,113 +57,30 @@ export default function PasswordGate({
     }
   }, [password, loading]);
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter') handleSubmit();
-    },
-    [handleSubmit]
-  );
-
-  // While checking localStorage on first mount, show nothing
-  if (checking) return null;
-
-  // If password protection is not configured, skip the gate entirely
   if (!passwordConfigured) return <>{children}</>;
-
-  // Already authenticated — render the app
+  if (checking) return <div className="loading-screen" role="status">ENTERING YOUR COSMOS…</div>;
   if (authed) return <>{children}</>;
 
-  // Password gate page
   return (
-    <div
-      className="fixed inset-0 flex items-center justify-center"
-      style={{
-        background: 'linear-gradient(135deg, var(--pink-lotus) 0%, var(--purple-lavender) 50%, var(--pink-blush) 100%)',
-      }}
-    >
-      {/* Floating decorations */}
-      <div
-        className="absolute animate-float"
-        style={{ top: '10%', left: '15%', fontSize: '40px', opacity: 0.6 }}
-      >
-        ✨
-      </div>
-      <div
-        className="absolute animate-float-slow"
-        style={{ top: '20%', right: '12%', fontSize: '32px', opacity: 0.5 }}
-      >
-        🌸
-      </div>
-      <div
-        className="absolute animate-float-fast"
-        style={{ bottom: '15%', left: '20%', fontSize: '36px', opacity: 0.5 }}
-      >
-        💫
-      </div>
-      <div
-        className="absolute animate-float"
-        style={{ bottom: '25%', right: '18%', fontSize: '28px', opacity: 0.4 }}
-      >
-        🦋
-      </div>
-
-      {/* Glass card */}
-      <div
-        className="glass-card px-8 py-10 max-w-sm w-full mx-4 text-center animate-fade-in"
-        style={{ boxShadow: 'var(--shadow-card)' }}
-      >
-        {/* Lock icon */}
-        <div className="text-5xl mb-4">🔐</div>
-
-        <h1
-          className="text-2xl font-bold mb-2"
-          style={{
-            fontFamily: 'var(--font-pixel)',
-            color: 'var(--text-primary)',
-          }}
-        >
-          Suwin&apos;s Cosmos
-        </h1>
-        <p
-          className="text-sm mb-6"
-          style={{ color: 'var(--text-secondary)' }}
-        >
-          输入密码以继续访问
-        </p>
-
-        {/* Password input + Enter button on same row */}
-        <div className="flex items-center gap-2 mb-4">
-          <input
-            type="password"
-            value={password}
-            onChange={e => { setPassword(e.target.value); setError(''); }}
-            onKeyDown={handleKeyDown}
-            placeholder="请输入密码"
-            disabled={loading}
-            autoFocus
-            className="flex-1 text-center py-3 px-4 rounded-full text-base outline-none transition-all"
-            style={{
-              background: 'rgba(255,255,255,0.4)',
-              border: error
-                ? '1.5px solid #FF1493'
-                : '1.5px solid rgba(255,255,255,0.5)',
-              color: 'var(--text-primary)',
-              fontFamily: 'var(--font-sans)',
-            }}
-          />
-          <button
-            onClick={handleSubmit}
-            disabled={loading || !password.trim()}
-            className="shrink-0 px-6 py-3 rounded-full text-white font-medium text-base transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
-            style={{
-              background: 'linear-gradient(135deg, #FF69B4, #FF1493)',
-              boxShadow: '0 4px 16px rgba(255,20,147,0.3)',
-            }}
-          >
-            {loading ? '...' : 'Enter'}
-          </button>
-        </div>
-      </div>
+    <div className="auth-page">
+      <AmbientVideo />
+      <header className="auth-header"><SiteBrand /><span className="eyebrow">[ PRIVATE SPACE ]</span></header>
+      <main className="auth-main">
+        <p className="eyebrow">A LITTLE UNIVERSE, JUST FOR YOU</p>
+        <h1>welcome to<br />your cosmos</h1>
+        <p className="auth-description">你的想法、记忆和日常，都在这里。<br />输入密码，回到自己的小宇宙。</p>
+        <form className="auth-form" onSubmit={(event) => { event.preventDefault(); void handleSubmit(); }}>
+          <label htmlFor="site-password">访问密码</label>
+          <div className="auth-input-row">
+            <input id="site-password" type="password" autoComplete="current-password" value={password}
+              onChange={(event) => { setPassword(event.target.value); setError(''); }}
+              placeholder="请输入密码" disabled={loading} required autoFocus
+              aria-invalid={Boolean(error)} aria-describedby={error ? 'auth-error' : undefined} />
+            <button type="submit" className="outline-button" disabled={loading || !password.trim()}>{loading ? '验证中…' : 'ENTER ↗'}</button>
+          </div>
+          <div className="auth-status"><p id="auth-error" className="error-text" role="alert">{error}</p></div>
+        </form>
+      </main>
     </div>
   );
 }

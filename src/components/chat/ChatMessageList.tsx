@@ -5,59 +5,28 @@ import type { ChatMessage } from '@/types';
 import { useChatContext } from '@/contexts/ChatContext';
 import ChatBubble from './ChatBubble';
 
-interface ChatMessageListProps {
-  messages: ChatMessage[];
-}
-
-export default function ChatMessageList({ messages }: ChatMessageListProps) {
+export default function ChatMessageList({ messages }: { messages: ChatMessage[] }) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const { deleteMessage, editMessage } = useChatContext();
-
-  // Auto-scroll to bottom when new messages arrive
+  const lastContent = messages.at(-1)?.content;
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages.length, messages[messages.length - 1]?.content]);
+    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth';
+    bottomRef.current?.scrollIntoView({ behavior, block: 'end' });
+  }, [messages.length, lastContent]);
 
   if (messages.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-16">
-        <div className="glass-card max-w-sm w-full p-6 text-center">
-          <p className="text-5xl mb-4">✧</p>
-          <h2
-            className="text-xl font-bold mb-3"
-            style={{
-              fontFamily: 'var(--font-pixel)',
-              color: 'var(--text-primary)',
-              fontSize: '13px',
-              lineHeight: 2,
-              letterSpacing: '0.05em',
-            }}
-          >
-            START YOUR DAY
-          </h2>
-          <p className="text-[13px] text-[var(--text-secondary)] leading-relaxed">
-            写下任何你想记录的——
-            <br />
-            今天做了什么、心情如何、体重多少...
-          </p>
-        </div>
+      <div className="chat-welcome">
+        <div className="pixel-star" aria-hidden="true">✧</div>
+        <h1>what&apos;s on<br />your mind?</h1>
+        <p>今天的心情、突然的灵感，或者一件很小的事。<br />从哪里开始都好，我在这里听你说。</p>
       </div>
     );
   }
-
   return (
-    <div className="flex-1 overflow-y-auto px-3 md:px-4 py-4">
-      <div className="flex flex-col gap-4 max-w-2xl mx-auto">
-        {messages.map((msg) => (
-          <ChatBubble
-            key={msg.id}
-            message={msg}
-            onDelete={deleteMessage}
-            onEdit={editMessage}
-          />
-        ))}
-        <div ref={bottomRef} />
-      </div>
+    <div className="message-list" role="log" aria-label="聊天记录" aria-live="polite" aria-relevant="additions">
+      {messages.map((message) => <ChatBubble key={message.id} message={message} onDelete={deleteMessage} onEdit={editMessage} />)}
+      <div ref={bottomRef} />
     </div>
   );
 }

@@ -13,139 +13,41 @@ interface ChatBubbleProps {
 
 export default function ChatBubble({ message, onDelete, onEdit }: ChatBubbleProps) {
   const isUser = message.role === 'user';
-  const [showActions, setShowActions] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(message.content);
   const editInputRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => { if (editing) editInputRef.current?.focus(); }, [editing]);
 
-  useEffect(() => {
-    if (editing) {
-      editInputRef.current?.focus();
-      editInputRef.current?.setSelectionRange(editText.length, editText.length);
-    }
-  }, [editing, editText.length]);
-
-  const handleEdit = () => {
-    setEditText(message.content);
-    setEditing(true);
-  };
-
-  const handleSaveEdit = () => {
-    const trimmed = editText.trim();
-    if (trimmed && trimmed !== message.content) {
-      onEdit?.(message.id, trimmed);
-    }
+  const saveEdit = () => {
+    if (editText.trim() && editText.trim() !== message.content) onEdit?.(message.id, editText.trim());
     setEditing(false);
   };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSaveEdit();
-    }
-    if (e.key === 'Escape') {
-      setEditing(false);
-      setEditText(message.content);
-    }
-  };
-
   return (
-    <div
-      className={`flex flex-col gap-1 animate-slide-up ${isUser ? 'items-end' : 'items-start'}`}
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => { setShowActions(false); setEditing(false); }}
-    >
-      {/* Action buttons (user messages only, appears on hover) */}
-      {isUser && !message.isStreaming && showActions && !editing && (
-        <div className="flex items-center gap-1 px-1 animate-fade-in">
-          <button
-            onClick={handleEdit}
-            className="w-6 h-6 rounded-full flex items-center justify-center text-xs transition-all hover:scale-110"
-            style={{
-              background: 'rgba(255,255,255,0.5)',
-              border: '1px solid rgba(255,20,147,0.2)',
-              color: 'var(--text-secondary)',
-            }}
-            title="编辑"
-          >
-            ✏️
-          </button>
-          <button
-            onClick={() => onDelete?.(message.id)}
-            className="w-6 h-6 rounded-full flex items-center justify-center text-xs transition-all hover:scale-110"
-            style={{
-              background: 'rgba(255,255,255,0.5)',
-              border: '1px solid rgba(255,20,147,0.2)',
-              color: 'var(--text-secondary)',
-            }}
-            title="删除"
-          >
-            🗑️
-          </button>
-        </div>
-      )}
-
-      {/* Bubble */}
-      <div
-        className={`
-          max-w-[85%] md:max-w-[75%] px-4 py-3
-          ${isUser ? 'gel-bubble' : 'glass-bubble'}
-        `}
-        style={isUser ? {
-          borderBottomRightRadius: '6px',
-        } : {
-          borderBottomLeftRadius: '6px',
-        }}
-      >
-        {/* Streaming cursor (only when streaming and empty) */}
-        {message.isStreaming && !message.content && (
-          <span className="inline-block w-2 h-4 bg-[var(--pink-barbie)] rounded-sm ml-0.5 animate-typing-cursor" />
-        )}
-
-        {/* Content or Edit input */}
+    <div className={`flex flex-col gap-2 animate-slide-up ${isUser ? 'items-end' : 'items-start'}`}>
+      <div className="message-meta"><span>{isUser ? 'YOU' : 'COSMOS'}</span><time>{formatTime(message.timestamp)}</time></div>
+      <div className={`message-bubble ${isUser ? 'gel-bubble' : 'glass-bubble'}`}>
         {editing ? (
-          <textarea
-            ref={editInputRef}
-            value={editText}
-            onChange={e => setEditText(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onBlur={handleSaveEdit}
-            className="w-full min-w-[120px] bg-transparent text-sm md:text-base leading-relaxed outline-none resize-none"
-            style={{
-              color: 'white',
-              fontFamily: 'inherit',
-            }}
-            rows={Math.min(editText.split('\n').length, 6)}
-          />
+          <div>
+            <textarea ref={editInputRef} className="message-edit" aria-label="编辑消息" value={editText} onChange={(event) => setEditText(event.target.value)} rows={3}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') setEditing(false);
+                if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing && event.keyCode !== 229) { event.preventDefault(); saveEdit(); }
+              }} />
+            <div className="message-actions mt-2"><button className="mini-button" onClick={saveEdit}>保存</button><button className="mini-button" onClick={() => setEditing(false)}>取消</button></div>
+          </div>
         ) : (
-          <p className={`text-sm md:text-base leading-relaxed whitespace-pre-wrap ${isUser ? 'text-white' : 'text-[var(--text-primary)]'}`}>
-            {message.content}
-            {message.isStreaming && (
-              <span
-                className="inline-block w-1.5 h-4 ml-0.5 rounded-sm align-text-bottom"
-                style={{
-                  background: 'var(--pink-barbie)',
-                  animation: 'typing-cursor 0.8s infinite',
-                }}
-              />
-            )}
-          </p>
+          <p className="message-text">{message.content}{message.isStreaming && <span className="inline-block w-1.5 h-4 ml-1 bg-[var(--text-primary)] align-text-bottom animate-typing-cursor" aria-label="正在回复" />}</p>
         )}
       </div>
-
-      {/* Categories (only for AI messages after streaming) */}
-      {!isUser && message.categories && message.categories.length > 0 && !message.isStreaming && (
-        <div className="flex flex-wrap gap-1 px-1">
-          {message.categories.map(cat => (
-            <CategoryTag key={cat} category={cat} size="sm" />
-          ))}
+      {isUser && !message.isStreaming && !editing && (
+        <div className="message-actions">
+          <button className="mini-button" onClick={() => { setEditText(message.content); setEditing(true); }} aria-label="编辑消息">编辑</button>
+          <button className="mini-button" onClick={() => onDelete?.(message.id)} aria-label="删除消息">删除</button>
         </div>
       )}
-
-      {/* Timestamp */}
-      <span className="text-[10px] text-[var(--text-secondary)] px-2 opacity-60">
-        {formatTime(message.timestamp)}
-      </span>
+      {!isUser && Boolean(message.categories?.length) && !message.isStreaming && (
+        <div className="flex flex-wrap gap-1">{message.categories?.map(category => <CategoryTag key={category} category={category} />)}</div>
+      )}
     </div>
   );
 }

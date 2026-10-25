@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import type { Record as AppRecord, Category } from '@/types';
 import { getDB } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
@@ -13,7 +14,6 @@ interface TimelineViewProps {
 export default function TimelineView({ selectedCategory = null }: TimelineViewProps) {
   const [records, setRecords] = useState<AppRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
 
   const loadRecords = useCallback(async () => {
     try {
@@ -34,7 +34,7 @@ export default function TimelineView({ selectedCategory = null }: TimelineViewPr
     }
   }, [selectedCategory]);
 
-  useEffect(() => { loadRecords(); }, [loadRecords, refreshKey]);
+  useEffect(() => { loadRecords(); }, [loadRecords]);
 
   const handleDelete = useCallback(async (id: number) => {
     try {
@@ -76,67 +76,28 @@ export default function TimelineView({ selectedCategory = null }: TimelineViewPr
     grouped[key].push(rec);
   });
 
-  if (loading) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <p className="text-[var(--text-secondary)] animate-pulse">🌸 加载中...</p>
-      </div>
-    );
-  }
-
+  if (loading) return <div className="empty-state" role="status"><p>正在读取你的记忆…</p></div>;
   if (records.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center px-8 py-16 text-center">
-        <span className="text-5xl mb-4">📔</span>
-        <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
-          {selectedCategory ? '该分类下暂无记录' : '还没有记录'}
-        </h3>
-        <p className="text-sm text-[var(--text-secondary)]">
-          {selectedCategory
-            ? '试试选择其他分类标签吧 ✨'
-            : '去聊天页面开始记录你的第一天吧 🌸'}
-        </p>
+      <div className="empty-state">
+        <span className="empty-state-symbol" aria-hidden="true">✧</span>
+        <h2>{selectedCategory ? '这里还没有这类记忆' : '故事，从第一条记录开始'}</h2>
+        <p>{selectedCategory ? '换一个分类，看看其他生活片段。' : '那些平凡的小事，也值得被好好记住。'}</p>
+        {!selectedCategory && <Link href="/chat" className="outline-button">写下第一条记录 ↗</Link>}
       </div>
     );
   }
-
-  // Sort timestamps descending and render
-  const entries = Object.entries(grouped) as [string, AppRecord[]][];
-  entries.sort(([a], [b]) => Number(b) - Number(a));
-
+  const entries = Object.entries(grouped).sort(([a], [b]) => Number(b) - Number(a));
   return (
-    <div className="flex-1 overflow-y-auto px-4 pb-4">
-      <div className="max-w-2xl mx-auto">
-        {entries.map(([timestamp, dayRecords]) => (
-          <div key={timestamp} className="mb-6">
-            {/* Date header */}
-            <h3 className="text-sm font-semibold text-[var(--text-secondary)] mb-3 px-1 sticky top-0 py-2"
-              style={{ background: 'rgba(255,240,245,0.9)', backdropFilter: 'blur(8px)' }}>
-              {formatDate(Number(timestamp))}
-            </h3>
-
-            {/* Cards grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {dayRecords.map((rec: AppRecord, i: number) => {
-                // Stable pseudo-random rotation based on record id
-                const rotation = rec.id != null
-                  ? ((rec.id * 7) % 5) - 2
-                  : (i % 5) - 2;
-                return (
-                  <RecordCard
-                    key={rec.id ?? i}
-                    record={rec}
-                    rotation={rotation}
-                    onDelete={handleDelete}
-                    onEdit={handleEdit}
-                    onCategoriesChange={handleCategoriesChange}
-                  />
-                );
-              })}
-            </div>
+    <div className="timeline">
+      {entries.map(([timestamp, dayRecords]) => (
+        <section key={timestamp}>
+          <h2 className="timeline-date">{formatDate(Number(timestamp))} <span className="ml-3 opacity-60">/ {dayRecords.length} 条记录</span></h2>
+          <div className="record-grid">
+            {dayRecords.map((record, index) => <RecordCard key={record.id ?? index} record={record} onDelete={handleDelete} onEdit={handleEdit} onCategoriesChange={handleCategoriesChange} />)}
           </div>
-        ))}
-      </div>
+        </section>
+      ))}
     </div>
   );
 }
