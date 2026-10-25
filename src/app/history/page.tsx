@@ -17,7 +17,7 @@ export default function HistoryPage() {
       <main id="main-content" className="content-main">
         <PageIntro index="02" title="a constellation of memories" />
         <div className="section-toolbar"><CategoryFilter selected={selectedCategory} onChange={setSelectedCategory} /></div>
-        <TimelineView selectedCategory={selectedCategory} />
+        <div className="summary-panel"><TimelineView selectedCategory={selectedCategory} /></div>
       </main>
     </div>
   );
