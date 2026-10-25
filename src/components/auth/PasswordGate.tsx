@@ -66,13 +66,10 @@ export default function PasswordGate({
       <AmbientVideo />
       <header className="auth-header"><SiteBrand /><span className="eyebrow">[ PRIVATE SPACE ]</span></header>
       <main className="auth-main">
-        <p className="eyebrow">A LITTLE UNIVERSE, JUST FOR YOU</p>
         <h1>welcome to<br />your cosmos</h1>
-        <p className="auth-description">你的想法、记忆和日常，都在这里。<br />输入密码，回到自己的小宇宙。</p>
         <form className="auth-form" onSubmit={(event) => { event.preventDefault(); void handleSubmit(); }}>
-          <label htmlFor="site-password">访问密码</label>
           <div className="auth-input-row">
-            <input id="site-password" type="password" autoComplete="current-password" value={password}
+            <input id="site-password" aria-label="访问密码" type="password" autoComplete="current-password" value={password}
               onChange={(event) => { setPassword(event.target.value); setError(''); }}
               placeholder="请输入密码" disabled={loading} required autoFocus
               aria-invalid={Boolean(error)} aria-describedby={error ? 'auth-error' : undefined} />
