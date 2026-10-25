@@ -16,7 +16,6 @@ export default function HomePage() {
           </div>
         </div>
       </main>
-      <p className="hero-footnote">SUWIN&apos;S COSMOS <span aria-hidden="true">/</span> 记录 · 陪伴 · 成长</p>
     </div>
   );
 }
