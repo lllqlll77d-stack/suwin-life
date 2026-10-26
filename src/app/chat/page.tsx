@@ -8,8 +8,9 @@ import ChatInput from '@/components/chat/ChatInput';
 function ChatContent() {
   const { state, sendMessage } = useChatContext();
   return (
-    <div className="site-page chat-page">
+    <div className="site-page">
       <NavBar />
+      <div className="chat-page">
       <main id="main-content" className="chat-main">
         <div className="chat-heading"><span className="eyebrow">01 / CHAT</span><span className="eyebrow">{state.isStreaming ? '正在倾听…' : 'A SPACE TO BE YOURSELF'}</span></div>
         <ChatMessageList messages={state.messages} />
@@ -17,6 +18,7 @@ function ChatContent() {
           <ChatInput onSend={sendMessage} disabled={state.isStreaming} />
         </div>
       </main>
+      </div>
     </div>
   );
 }
