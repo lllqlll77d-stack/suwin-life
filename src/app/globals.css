@@ -103,6 +103,7 @@ button.category-pill.selected:hover { color: #230800; }
 .empty-state .outline-button { margin-top: 22px; }
 .error-text { color: #ffb4a8; font-size: 13px; line-height: 1.8; }
 
+.chat-page > .site-header { flex-shrink: 0; }
 .chat-page { display: flex; flex-direction: column; height: 100dvh; min-height: 560px; }
 .chat-main { width: min(960px, calc(100% - 96px)); min-height: 0; display: flex; flex: 1; flex-direction: column; margin: 0 auto; padding: 30px 0 54px; }
 .chat-heading { flex-shrink: 0; display: flex; justify-content: space-between; gap: 14px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }

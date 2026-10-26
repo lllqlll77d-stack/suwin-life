@@ -16,7 +16,7 @@ export default function ChatInput({ onSend, disabled = false }: ChatInputProps) 
     textarea.style.height = 'auto';
     textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
   }, [input]);
-  useEffect(() => { if (!disabled) textareaRef.current?.focus(); }, [disabled]);
+  useEffect(() => { if (!disabled) textareaRef.current?.focus({ preventScroll: true }); }, [disabled]);
 
   const handleSend = () => {
     if (!input.trim() || disabled) return;

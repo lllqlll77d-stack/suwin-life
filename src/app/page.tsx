@@ -9,8 +9,8 @@ export default function HomePage() {
         <div className="hero-copy">
           <h1>Honestly,<br />All I need is me</h1>
           <div className="hero-description">
-            <p>A quiet place for your thoughts — to remember the everyday, find your own patterns, and grow at your own pace.</p>
-            <Link href="/chat" className="text-link">开始记录 <span aria-hidden="true">↗</span></Link>
+            <p>The meaning of life lies in exploring new horizons, not in clinging to what is familiar. No matter what, we should never lose the courage to move forward.</p>
+            <Link href="/chat" className="text-link">START <span aria-hidden="true">↗</span></Link>
           </div>
         </div>
       </main>

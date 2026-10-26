@@ -6,12 +6,13 @@ import { useChatContext } from '@/contexts/ChatContext';
 import ChatBubble from './ChatBubble';
 
 export default function ChatMessageList({ messages }: { messages: ChatMessage[] }) {
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const { deleteMessage, editMessage } = useChatContext();
   const lastContent = messages.at(-1)?.content;
   useEffect(() => {
     const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth';
-    bottomRef.current?.scrollIntoView({ behavior, block: 'end' });
+    const list = listRef.current;
+    if (list) list.scrollTo({ top: list.scrollHeight, behavior });
   }, [messages.length, lastContent]);
 
   if (messages.length === 0) {
@@ -23,9 +24,8 @@ export default function ChatMessageList({ messages }: { messages: ChatMessage[] 
     );
   }
   return (
-    <div className="message-list" role="log" aria-label="聊天记录" aria-live="polite" aria-relevant="additions">
+    <div ref={listRef} className="message-list" role="log" aria-label="聊天记录" aria-live="polite" aria-relevant="additions">
       {messages.map((message) => <ChatBubble key={message.id} message={message} onDelete={deleteMessage} onEdit={editMessage} />)}
-      <div ref={bottomRef} />
     </div>
   );
 }
