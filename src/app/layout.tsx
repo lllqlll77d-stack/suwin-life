@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import PageResetHandler from "@/components/shared/PageResetHandler";
 import AmbientVideo from "@/components/layout/AmbientVideo";
+import NavBar from "@/components/layout/NavBar";
 import PasswordGate from "@/components/auth/PasswordGate";
 import AutoSummaryGenerator from "@/components/summary/AutoSummaryGenerator";
 
@@ -38,7 +39,8 @@ export default function RootLayout({
         <PasswordGate passwordConfigured={passwordConfigured}>
           <AutoSummaryGenerator />
           <PageResetHandler />
-          {children}
+          <NavBar />
+          <div className="navigation-content">{children}</div>
         </PasswordGate>
         </div>
       </body>

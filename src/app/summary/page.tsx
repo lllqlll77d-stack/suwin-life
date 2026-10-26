@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import NavBar from '@/components/layout/NavBar';
 import PageIntro from '@/components/layout/PageIntro';
 import SummaryCard from '@/components/summary/SummaryCard';
 import { getDB } from '@/lib/db';
@@ -211,7 +210,6 @@ export default function SummaryPage() {
 
   return (
     <div className="site-page">
-      <NavBar />
       <main id="main-content" className="content-main">
         <PageIntro index="03" title="see how far you've come" />
         <div className="section-toolbar summary-toolbar">

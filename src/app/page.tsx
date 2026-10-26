@@ -1,10 +1,8 @@
 import Link from 'next/link';
-import NavBar from '@/components/layout/NavBar';
 
 export default function HomePage() {
   return (
     <div className="cosmos-home">
-      <NavBar />
       <main id="main-content" className="hero-stage">
         <div className="hero-copy">
           <h1>Honestly,<br />All I need is me</h1>
